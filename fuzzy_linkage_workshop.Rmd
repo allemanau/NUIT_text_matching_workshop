@@ -1,0 +1,36 @@
+---
+title: "Text Matching for Approximate Joins"
+author: "Northwestern IT Research Computing Services"
+date: "November 21, 2019"
+output: html_document
+---
+
+## Fuzzy Linkage Workshop
+
+Welcome to the Research Computing Services Fuzzy Linkage Workshop! Today, we will discuss the use of fuzzy linkage techniques to merge data sets at the research scale (small to medium size data sets). If you have any specific questions following the workshop, please feel free to email me (*austinalleman2020\@u.northwestern.edu*) or [request a consultation with RCS](https://www.it.northwestern.edu/service-catalog/research/data-services/data-science.html).
+
+The packages we depend on in this session are checked for and, if necessary, installed below.
+
+```{r, message = FALSE}
+# Check if tidyverse is installed. If not, install it. This package standardizes a wide variety of data manipulation and modeling packages.
+if(!require(tidyverse)){
+    install.packages("tidyverse")
+}
+
+# Check if stringdist is installed. If not, install it. This package implements string distance/similarity metrics, and offers join functions using these metrics.
+if(!require(stringdist)){
+    install.packages("stringdist")
+}
+
+# Load libraries.
+library(tidyverse)
+library(stringdist)
+```
+
+Load up our two data sets.
+
+```{r}
+
+```
+
+Try to 
