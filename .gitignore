@@ -2,3 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
+scrape_imdb_and_rt.R

@@ -1,13 +1,15 @@
 ---
-title: "Text Matching for Approximate Joins"
+title: "Text Analysis: Matching and Linking"
 author: "Northwestern IT Research Computing Services"
 date: "November 21, 2019"
 output: html_document
 ---
 
-## Fuzzy Linkage Workshop
+### 1: Getting Started
 
-Welcome to the Research Computing Services Fuzzy Linkage Workshop! Today, we will discuss the use of fuzzy linkage techniques to merge data sets at the research scale (small to medium size data sets). If you have any specific questions following the workshop, please feel free to email me (*austinalleman2020\@u.northwestern.edu*) or [request a consultation with RCS](https://www.it.northwestern.edu/service-catalog/research/data-services/data-science.html).
+Welcome to the Text Analysis: Matching and Linking Workshop! Today, we will discuss the use of fuzzy linkage techniques to merge data sets at the research scale (small to medium size data sets). If you have any specific questions following the workshop, please feel free to email me (*austinalleman2020\@u.northwestern.edu*) or [request a consultation with RCS](https://www.it.northwestern.edu/service-catalog/research/data-services/data-science.html).
+
+##### 1.1: Installing and Loading Packages
 
 The packages we depend on in this session are checked for and, if necessary, installed below.
 
@@ -17,20 +19,183 @@ if(!require(tidyverse)){
     install.packages("tidyverse")
 }
 
-# Check if stringdist is installed. If not, install it. This package implements string distance/similarity metrics, and offers join functions using these metrics.
+# Check if stringdist is installed. If not, install it. This package implements string distance/similarity metrics.
 if(!require(stringdist)){
     install.packages("stringdist")
+}
+
+# Check if fuzzyjoin is installed. If not, install it. This package implements joins based on string distances.
+if(!require(fuzzyjoin)){
+    install.packages("fuzzyjoin")
+}
+
+# Check if fuzzyjoin is installed. If not, install it. This package implements joins based on string distances.
+if(!require(skimr)){
+    install.packages("skimr")
 }
 
 # Load libraries.
 library(tidyverse)
 library(stringdist)
+library(fuzzyjoin)
+library(skimr)
 ```
 
-Load up our two data sets.
+##### 1.2: Preliminaries
+
+In this workshop, we will lean on `tidyverse` data manipulation techniques. The functions you should be familiar with:
+
+* `select(df, vars)`: selects variables by name or using helper functions from `df`
+* `filter(df, cond)`: returns rows from `df` where `cond` is `TRUE`
+* `mutate(df, expr)`: creates new variables from the contents of `df` according to `expr`
+* `%>%`: supplies the result on its left as the implicit first argument to an operation on its right
+* `View(df)`: opens `df` in the data browser for easy viewing
+
+##### 1.3: Loading Data
+
+We will use the following data sets as part of the workshop. The first is the [2018 US News \& World Report's Top 10 Computer Science programs](https://www.usnews.com/best-graduate-schools/top-science-schools/computer-science-rankings), constructed manually below:
+
+```{r, message = FALSE, warning = FALSE}
+top_10_cs_schools <- c("Carnegie Mellon University", 
+                       "Massachusetts Institute of Technology",
+                       "Stanford University",
+                       "University of California, Berkeley",
+                       "University of Illinois, Urbana-Champaign",
+                       "Cornell University",
+                       "University of Washington",
+                       "Georgia Institute of Technology",
+                       "Princeton University",
+                       "University of Texas, Austin")
+institution_tbl <- tibble(Institution = top_10_cs_schools, Rank = 1:10)
+institution_tbl
+```
+
+The second is a webscraped data set of manual entry graduate admissions results for students applying to 'Computer Science' programs from [The Grad Cafe](https://www.thegradcafe.com/survey/index.php), where users can submit their own data, including GPA, GRE scores, admission result and date, and comments. The challenge with this data is that *everything* is manual entry -- including the name of the school.
+
+```{r, message = FALSE, warning = FALSE}
+admissions_results <- read_csv("gradcafe_cs_results.csv")
+```
+
+Let's take a quick look at this data set. There are roughly 42,000 admissions results:
+
+```{r}
+admissions_results %>%
+  skim()
+```
+
+Looking at the schools with the most applications:
+
+```{r}
+admissions_results %>%
+  count(Institution) %>%
+  arrange(desc(n)) %>%
+  print(n = 50)
+```
+
+As an enterprising graduate student, we're only interested in the admission results corresponding to USNWR's top 10 programs. Using our first table, we can perform an inner join on the the second table to get results corresponding only to those programs:
+
+```{r}
+join_results <- institution_tbl %>%
+  inner_join(admissions_results, 
+             by = c("Institution" = "Institution"))
+
+join_results %>%
+  group_by(Institution) %>%
+  summarize(Num_Applications = n(),
+            Rank = max(Rank)) %>%
+  arrange(Rank)
+```
+
+A naive join yields only 4 out of 10 programs with a match. The other 6 programs don't have matches because the join key, `Institution`, doesn't match anything in our manual entry data set. We can alleviate this problem to some extent by removing capitalizations and punctuations in the join key that may result in mismatches:
+
+```{r}
+institution_tbl_adj <- institution_tbl %>%
+  mutate(Institution_Key = str_to_lower(str_replace_all(Institution, "[:punct:]", "")))
+
+admissions_results_adj <- admissions_results %>%
+  mutate(Institution_Key = str_to_lower(str_replace_all(Institution, "[:punct:]", "")))
+```
+
+Now we try our join again:
+
+```{r}
+join_results <- institution_tbl_adj %>%
+  inner_join(admissions_results_adj, 
+             by = c("Institution_Key" = "Institution_Key"))
+
+join_results %>%
+  group_by(Institution.x) %>%
+  summarize(Num_Applications = n(),
+            Rank = max(Rank)) %>%
+  arrange(Rank)
+```
+
+Standardizing our join key has ensured that we find matches for every one of our top 10 programs in `institution_tbl`. But notice, in the original table, our favorite program in row 1 -- "Stanford University" -- has an alias in our data set we haven't corrected for yet in row 17 -- "Stanford". Also notice, "Massachusetts Institute of Technology (MIT)" had 490 applicants but we only match 19 of them with "Massachusetts Institute of Technology". We could keep applying applying new rules -- e.g., remove anything in parentheses -- but in general, this strategy is asking for an arms race with the data set, as many rows will contain misspelled university names ("University of California, Berkley"), reordered components of the university names ("University of Carnegie Mellon"). On the other hand, we could use a fuzzy matching scheme to catch exceptions.
+
+### 2: Fuzzy Matching via String Distances
+
+The most common variant of fuzzy matching is based on the concept of string similarity or distance. If we could decide how close together two strings are in some meaningful way, we could establish a matching threshold. It's something of an art, as its efficacy depends in descending order on:
+
+* how you decide on a string distance and match threshold
+* how comfortable you are with estimated false matching rates
+* whether one of your data sets has a "clean" key to match with
+
+##### 2.1: String Distances
+
+The first point brings us to the core principle of fuzzy matching -- string distances. A string distance is a function that accepts two strings as input, and returns a number measuring the degree of difference between the two strings. For example, if we have the strings "Northwestern", "Northeastern", and "Vanderbilt", we expect that a string distance function tells us that the first two strings are not very different, while any other pair should be identified as very different.
+
+We'll talk about two specific examples during this workshop -- the Levenshtein distance/ratio, and Jaccard similarity -- although there are many others. 
+
+### 2.1.1: Levenshtein Distance
+
+```{r}
+stringdist("Northwestern", "Northeastern",
+           method = "lv")
+
+stringdist("Northwestern", "Vanderbilt",
+           method = "lv")
+```
+
+### 2.1.2: Jaccard Similarity
+
+```{r}
+# qgram distance, q = 2
+stringdist("Northwestern", "Northeastern",
+           method = "qgram", q = 2)
+
+stringdist("Northwestern", "Vanderbilt",
+           method = "qgram", q = 2)
+
+# jaccard similarity
+stringdist("Northwestern", "Northeastern",
+           method = "jaccard", q = 2)
+
+stringdist("Northwestern", "Vanderbilt",
+           method = "jaccard", q = 2)
+```
+
+### 2.1.3: Exercise
+
+Turn to your neighbors and compare your names using string distances.
 
 ```{r}
 
 ```
 
-Try to 
+## 2.2: Applying String Distances to Joins
+
+Applying this concept to our data, we see many more matches in our 
+
+```{r}
+join_results <- institution_tbl_adj %>%
+  stringdist_inner_join(admissions_results_adj, 
+             by = c("Institution_Key" = "Institution_Key"),
+             method = "jaccard", q = 2, max_dist = .3)
+
+join_results %>%
+  group_by(Institution.x) %>%
+  summarize(Num_Applications = n(),
+            Rank = max(Rank)) %>%
+  arrange(Rank)
+```
+
