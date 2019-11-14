@@ -17,4 +17,14 @@ library(stringdist)
 library(fuzzyjoin)
 ```
 
-If you have any trouble with these installations, please feel free to come to Data Drop-in Hours from 2-4PM on Tuesday, or come early to the workshop on Wednesday so the issue can be resolved.
+If you have any trouble with these installations, please feel free to come to [Data Drop-in Hours](https://www.it.northwestern.edu/research/consultation/data-services.html) from 2-4PM on Tuesday, November 19, or come early to the workshop on Wednesday so the issue can be resolved.
+
+#Workshop Materials
+
+With R and RStudio installed on your laptop, download all of the materials to your laptop. Click on the green Clone or Download button above, then download the repository as a ZIP file.
+
+![GitHub Clone or Download](/images/github_clone_or_download.png)
+
+Find the downloaded .zip file on your computer, likely in your Downloads folder. Unzip it - usually by double-clicking. This will create a directory called BLAH. Move this somewhere on your computer where you'll be able to find it, like your Documents folder.
+
+Double-click on `text_matching_workshop.Rproj` to open the project. Or from RStudio, `File > Open Project...`, then navigate to the location of the file.
