@@ -81,8 +81,7 @@ View(df)
 ```
 `%>%`: supplies the result on its left as the implicit first argument to an operation on its right
 ```{r, eval = FALSE}
-df %>% 
-  View()   # same as View(df)
+df %>% View()   # same as View(df)
 ```
 
 ##### 1.2.1: Exercise 
@@ -108,7 +107,7 @@ df %>%
 
 ##### 1.3: Loading Data
 
-We will use the following data sets as part of the workshop. The first is the [2018 US News \& World Report's Top 15 Computer Science programs](https://www.usnews.com/best-graduate-schools/top-science-schools/computer-science-rankings), constructed manually below:
+We will use the following data sets as part of the workshop. The first is the [2018 US News \& World Report's Top 20(ish) Computer Science programs](https://www.usnews.com/best-graduate-schools/top-science-schools/computer-science-rankings), constructed manually below:
 
 ```{r, message = FALSE, warning = FALSE}
 top_20_cs_schools <- c("Carnegie Mellon University", 
@@ -120,21 +119,21 @@ top_20_cs_schools <- c("Carnegie Mellon University",
                        "University of Washington",
                        "Georgia Institute of Technology",
                        "Princeton University",
-                       "University of Texas, Austin",
-                       "California Institute of Technology",
-                       "University of Michigan, Ann Arbor",
-                       "Columbia University",
-                       "University of California, Los Angeles",
-                       "University of Wisconsin, Madison",
-                       "Harvard University",
-                       "University of California, San Diego",
-                       "University of Maryland, College Park",
-                       "University of Pennsylvania",
-                       "Rice University")
+                       "University of Texas, Austin") #,
+                       #"California Institute of Technology",
+                       #"University of Michigan, Ann Arbor",
+                       #"Columbia University",
+                       #"University of California, Los Angeles",
+                       #"University of Wisconsin, Madison",
+                       #"Harvard University",
+                       #"University of California, San Diego",
+                       #"University of Maryland, College Park",
+                       #"University of Pennsylvania",
+                       #"Rice University")
 
-unswr_rank = 1:20
-csr_rank = c(1,2,4,5,3,7,6,11,20,17,65,8,12,16,13,24,9,10,14,48)
-nrc_rank = c(4,2,1,5,6,7,24,12,3,14,63,17,20,10,18,9,16,15,13,47)
+unswr_rank = 1:10 #1:20
+csr_rank = c(1,2,4,5,3,7,6,11,20,17) #,65,8,12,16,13,24,9,10,14,48)
+nrc_rank = c(4,2,1,5,6,7,24,12,3,14) #,63,17,20,10,18,9,16,15,13,47)
 
 institution_tbl <- tibble(institution = factor(top_20_cs_schools, 
                                                levels = top_20_cs_schools), 
