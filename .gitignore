@@ -3,4 +3,3 @@
 .RData
 .Ruserdata
 scripts/scrape_imdb_and_rt.R
-images/github_clone_or_download.png
