@@ -24,7 +24,7 @@ If you have any trouble with these installations, please feel free to come to [D
 With R and RStudio installed on your laptop, download all of the materials to your laptop. Click on the green Clone or Download button above, then download the repository as a ZIP file.
 
 <p align="center">
-  <img src="https://github.com/allemanau/NUIT_text_matching_workshop/tree/master/images/github_clone_or_download.png?raw=true"/>
+  <img src="/images/github_clone_or_download.png"/>
 </p>
 
 Find the downloaded .zip file on your computer, likely in your Downloads folder. Unzip it - usually by double-clicking. This will create a directory called BLAH. Move this somewhere on your computer where you'll be able to find it, like your Documents folder.
