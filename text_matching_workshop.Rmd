@@ -29,16 +29,10 @@ if(!require(fuzzyjoin)){
     install.packages("fuzzyjoin")
 }
 
-# Check if fuzzyjoin is installed. If not, install it. This package implements joins based on string distances.
-if(!require(skimr)){
-    install.packages("skimr")
-}
-
 # Load libraries.
 library(tidyverse)
 library(stringdist)
 library(fuzzyjoin)
-library(skimr)
 ```
 
 ##### 1.2: Preliminaries
@@ -47,6 +41,7 @@ In this workshop, we will lean on `tidyverse` data manipulation techniques. The 
 
 ```{r}
 # Creating toy data set
+library(tidyverse)
 df <- tibble(x = c(1,2,3,4,5,6), 
              y = c("R", "C", "S", "R", "C", "S"))
 df
@@ -54,18 +49,28 @@ df
 `select(df, vars)`: selects variables by name or using helper functions from `df`
 ```{r}
 select(df, x)
+
+select(df, x, y)
+
+select(df, -x)
 ```
 `filter(df, cond)`: returns rows from `df` where `cond` is `TRUE`
 ```{r}
 filter(df, y == "R")
+
+filter(df, x > 2, 
+       y == "S")
 ```
 `arrange(df, vars)`: arranges rows from `df` by ascending values of `vars`, in order (can use `desc(var)`)
 ```{r}
+arrange(df, y, x)
+
 arrange(df, desc(x))
 ```
 `mutate(df, expr)`: creates new variables from the contents of `df` according to `expr`
 ```{r}
-mutate(df, a = 2*x, b = paste0(y, "!"))
+mutate(df, a = 2*x, 
+       b = paste0(y, "!"))
 ```
 `group_by(df, vars)`: specifies that operations should be done within groups defined by combinations of values of `vars`
 ```{r}
@@ -81,7 +86,12 @@ View(df)
 ```
 `%>%`: supplies the result on its left as the implicit first argument to an operation on its right
 ```{r, eval = FALSE}
-df %>% View()   # same as View(df)
+df %>% 
+  filter(x > 2)
+
+df %>%
+  group_by(y) %>%
+  summarize(x_sum = sum(x))
 ```
 
 ##### 1.2.1: Exercise 
@@ -89,19 +99,16 @@ df %>% View()   # same as View(df)
 Given data frame `df` below, use `mutate`, `select`, `filter`, `group_by`, `summarize`, and `%>%` to do the following in *one continuous statement*:
 
 * create a new column `z` which is equal to times the value of `x`
-* retrieve only the `y` and `z` columns from `df`
 * retrieve only those rows where `z > 8`
-* count the number of times each letter appears in these rows (`n_times`), and the sum of `z` (`z_sum`) for each letter in `y`
+* compute the sum of `z` (`z_sum`) for each letter in `y`
 * arrange by descending `z_sum` values
 
 ```{r}
 df %>%
   mutate(z = 4*x) %>%            # "create column" means "mutate"
-  select(y, z) %>%               # "retrieve columns" means "select"
   filter(z > 8) %>%              # "retrieve rows where..."
   group_by(y) %>%                # do operations within values of a variable means "group_by"
-  summarize(n_times = n(),       # aggregate operation means "summarize"
-            z_sum = sum(z)) %>%
+  summarize(z_sum = sum(z)) %>%
   arrange(desc(z_sum))           # "arrange by descending var" means...arrange by desc(var)
 ```
 
@@ -147,14 +154,14 @@ institution_tbl
 The second is a webscraped data set of manual entry graduate admissions results for students applying to 'Computer Science' programs from [The Grad Cafe](https://www.thegradcafe.com/survey/index.php), where users can submit their own data, including GPA, GRE scores, admission result and date, and comments. The challenge with this data is that *everything* is manual entry -- including the name of the school.
 
 ```{r, message = FALSE, warning = FALSE}
-admissions_results <- read_csv("gradcafe_cs_results.csv")
+admissions_results <- read_csv("data/gradcafe_cs_results.csv")
 ```
 
 Let's take a quick look at this data set. There are roughly 42,000 admissions results:
 
 ```{r}
 admissions_results %>%
-  skim()
+  summary()
 ```
 
 ##### 1.3.1: Exercise
@@ -325,7 +332,7 @@ fuzzy_join_results %>%
   mutate(gpa = ifelse(gpa < 2 | gpa > 4, NA, gpa),
          gre_quant = ifelse(gre_quant < 130 | gre_quant > 170, NA, gre_quant),
          gre_verbal = ifelse(gre_verbal < 130 | gre_verbal > 170, NA, gre_verbal)) %>%
-  filter(!is.na(gpa), degree == "Masters", decision %in% c("Accepted","Rejected")) %>%
+  filter(!is.na(gpa), degree == "PhD", decision %in% c("Accepted","Rejected")) %>%
   select(institution.x, 
          decision,
          gpa,

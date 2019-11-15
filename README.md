@@ -9,7 +9,7 @@ install.packages("stringdist")
 install.packages("fuzzyjoin")
 ```
 
-If you are asked to install any of these from binaries (`There are binary versions available but the source versions are later. Do you want to install from sources the package which needs compilation?`), just say no (type `n` and hit enter/return). The libraries should all install successfully, which you can test by loading them:
+If you are asked to install any of these from binaries (you'll see something like: `There are binary versions available but the source versions are later: binary source needs_compilation. Do you want to install from sources the package which needs compilation?`), just say no (type `n` and hit enter/return). The libraries should all install successfully, which you can test by loading them:
 
 ```r
 library(tidyverse)

@@ -23,99 +23,85 @@ if(!require(fuzzyjoin)){
   install.packages("fuzzyjoin")
 }
 
-# Check if fuzzyjoin is installed. If not, install it. This package implements the skim function.
-if(!require(skimr)){
-  install.packages("skimr")
-}
-
 # Load libraries.
 library(tidyverse)
 library(stringdist)
 library(fuzzyjoin)
-library(skimr)
 
-##### 1.2: Preliminaries
-
-# Creating toy data set
-df <- tibble(x = c(1,2,3,4,5,6), 
-             y = c("R", "C", "S", "R", "C", "S"))
-df
-
-# select example
-select(df, x)
-
-# filter example
-filter(df, y == "R")
-
-# arrange example
-arrange(df, desc(x))
-
-# mutate example
-mutate(df, a = 2*x, b = paste0(y, "!"))
-
-# group_by example
-group_by(df, y)
-
-# summarize example
-summarize(df, x_sum = sum(x))
-
-# View example
-df %>% 
-  View()
-
-# Begin exercise 1
-
-# End exercise 1
-
-##### 1.3: Loading Data
-
-# Table 1: rankings table
-
-top_20_cs_schools <- c("Carnegie Mellon University", 
-                       "Massachusetts Institute of Technology",
-                       "Stanford University",
-                       "University of California, Berkeley",
-                       "University of Illinois, Urbana-Champaign",
-                       "Cornell University",
-                       "University of Washington",
-                       "Georgia Institute of Technology",
-                       "Princeton University",
-                       "University of Texas, Austin",
-                       "California Institute of Technology",
-                       "University of Michigan, Ann Arbor",
-                       "Columbia University",
-                       "University of California, Los Angeles",
-                       "University of Wisconsin, Madison",
-                       "Harvard University",
-                       "University of California, San Diego",
-                       "University of Maryland, College Park",
-                       "University of Pennsylvania",
-                       "Rice University")
-
-unswr_rank = 1:20
-csr_rank = c(1,2,4,5,3,7,6,11,20,17,65,8,12,16,13,24,9,10,14,48)
-nrc_rank = c(4,2,1,5,6,7,24,12,3,14,63,17,20,10,18,9,16,15,13,47)
-
-institution_tbl <- tibble(institution = factor(top_20_cs_schools, 
-                                               levels = top_20_cs_schools), 
-                          unswr_rank = unswr_rank,
-                          csr_rank = csr_rank,
-                          nrc_rank = nrc_rank)
-
-institution_tbl
+##### 1: Analyzing Scraped Data
+#####
+#####
 
 # Table 2: admission results table
+admissions_results <- read_csv("data/gradcafe_cs_results.csv")
 
-admissions_results <- read_csv("gradcafe_cs_results.csv")
+admissions_results
+
+# Exercise part 1
 admissions_results %>%
-  skim()
+  select(degree, gpa) %>%
+  filter(degree == "PhD", gpa > 0, gpa <= 4) %>%
+  summarize(avg_gpa = mean(gpa, na.rm = TRUE))
 
+# Exercise part 2
+admissions_results %>%
+  filter(degree == "PhD", gre_verbal > 130, gre_verbal <= 170, gre_quant > 130, gre_quant <= 170) %>%
+  mutate(gre_total = gre_verbal + gre_quant) %>%
+  summarize(avg_gre = mean(gre_total, na.rm = TRUE))
+
+# Exercise part 3
 admissions_results %>%
   group_by(institution) %>%
   summarize(num_results = n()) %>%
   arrange(desc(num_results)) %>%
   print(n = 50)
 
+##### 2: Combining Data Sets
+#####
+#####
 
+# Table 1: rankings table
+rankings <- read_csv("data/rankings_table.csv")
+
+rankings
+
+join_results <- inner_join(rankings, admissions_results, 
+                           by = "institution")
+join_results
+
+# Plot from slide
+join_results %>%
+  filter(degree == "PhD", 
+         gpa > 0, 
+         gpa <= 4, 
+         decision %in% c("Accepted", "Rejected")) %>%
+  ggplot() + 
+  geom_boxplot(aes(x = decision, y = gpa, fill = institution)) +
+  coord_cartesian(ylim = c(3,4)) + 
+  ggtitle("GPA by Application Decision, USNWR Top 10 (1-10, left to right)")
+
+# Print all institutions in admission_results with substring "Berkeley"
+admissions_results %>%
+  filter(str_detect(institution, "Berkeley")) %>%
+  distinct(institution) %>%
+  print(n = nrow(.))
+
+##### 3: String Distances
+#####
+#####
+
+stringdist("Northwestern", "Northeastern", method = "lv")
+
+stringdist("Northwestern", "Northeastern", method = "qgram", q = 2)
+
+lvr <- function(str_a, str_b){
+  if(max(str_length(c(str_a, str_a))) == 0){return(0)}
+  stringdist(str_a, str_b, method = "lv")/
+    max(str_length(c(str_a, str_a)))
+}
+
+lvr("Northwestern", "Northeastern")
+
+stringdist("Northwestern", "Northeastern", method = "jaccard", q = 2)
 
 
