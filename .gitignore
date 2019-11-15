@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 scripts/scrape_imdb_and_rt.R
+text_matching_workshop.Rmd
+text_matching_workshop.html
