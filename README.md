@@ -27,6 +27,6 @@ With R and RStudio installed on your laptop, download all of the materials to yo
   <img src="/images/github_clone_or_download.png"/>
 </p>
 
-Find the downloaded .zip file on your computer, likely in your Downloads folder. Unzip it - usually by double-clicking. This will create a directory called BLAH. Move this somewhere on your computer where you'll be able to find it, like your Documents folder.
+Find the downloaded .zip file on your computer, likely in your Downloads folder. Unzip it - usually by double-clicking. This will create a directory called NUIT_text_matching_workshop-master. Move this somewhere on your computer where you'll be able to find it, like your Documents folder.
 
-Double-click on `text_matching_workshop.Rproj` to open the project. Or from RStudio, `File > Open Project...`, then navigate to the location of the file.
+Double-click on `text_matching_workshop.Rproj` within the directory to open the project. Or from RStudio, `File > Open Project...`, then navigate to the location of the file.
