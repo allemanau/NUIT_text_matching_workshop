@@ -1,10 +1,10 @@
 # User-defined function to standardize join keys.
-standardize_key <- function(key){
+standardize_key <- function(key, q){
   # first, convert to lower case
   clean_key <- stringr::str_to_lower(key)
   
   # next, replace stop words
-  clean_key <- stringr::str_replace_all(clean_key, "[:punct:]|university|institute| of | at ", " ")
+  clean_key <- stringr::str_replace_all(clean_key, "[:punct:]|univ[a-z]*|insti[a-z]*|school|college| of | at ", " ")
   
   # next, replace multiple spaces with single spaces
   clean_key <- stringr::str_replace_all(clean_key, "[ ]+", " ")
@@ -24,11 +24,10 @@ lvr <- function(str_a = "", str_b = ""){
 }
 
 # User-defined function to fuzzy join on Levenshtein ratio.
-lvr_inner_join <- function(x, y, by = NULL, max_dist = .1){
+lvr_inner_join <- function(x, y, by = NULL, max_dist = 1, distance_col = "dist"){
   fuzzy_inner_join(x,
                    y, 
                    by,
-                   match_fun = function(a,b){lvr(a,b) < max_dist}) %>%
-    mutate(dist = lvr(paste0(by,".x"),
-                      paste0(by,".y")))
+                   match_fun = function(a,b){lvr(a,b) <= max_dist}) %>%
+    mutate(!!distance_col := lvr(paste0(by,".x"), paste0(by,".y")))
 }
