@@ -12,7 +12,7 @@ bind_rows(
          join_type = factor(join_type, levels = c("regular", "standardized"))) %>%
   ggplot() +
   geom_bar(aes(x = institution, y = n, fill = join_type), position="dodge", stat = "identity") + 
-  ggtitle("Number of matches by join type") +
+  ggtitle("Number of matches by join type and institution") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
@@ -34,5 +34,5 @@ bind_rows(
          join_type = factor(join_type, levels = c("regular", "standardized", "fuzzy standardized"))) %>%
   ggplot() +
   geom_bar(aes(x = institution, y = n, fill = join_type), position="dodge", stat = "identity") + 
-  ggtitle("Number of matches by join type (fuzzy = Jaccard 2-grams, max_dist 0.4)") +
+  ggtitle("Number of matches by join type and institution (fuzzy = Jaccard 2-grams, max_dist 0.4)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))

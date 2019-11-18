@@ -93,7 +93,16 @@ join_results_adj <- inner_join(rankings_adj, admissions_results_adj,
                            by = "institution_key")
 join_results_adj
 
-
+# SECOND GPA PLOT FROM SLIDES
+join_results_adj %>%
+  filter(degree == "PhD", 
+         gpa > 0, 
+         gpa <= 4, 
+         decision %in% c("Accepted", "Rejected")) %>%
+  ggplot() + 
+  geom_boxplot(aes(x = decision, y = gpa, fill = institution.x)) +
+  coord_cartesian(ylim = c(3,4)) + 
+  ggtitle("GPA by Application Decision, USNWR Top 10 (1-10, left to right)")
 
 
 
@@ -142,3 +151,15 @@ fuzzy_join_results %>%
             dist = first(dist)) %>%
   arrange(desc(dist)) %>% 
   View()
+
+
+# THIRD GPA PLOT FROM SLIDES
+fuzzy_join_results %>%
+  filter(degree == "PhD", 
+         gpa > 0, 
+         gpa <= 4, 
+         decision %in% c("Accepted", "Rejected")) %>%
+  ggplot() + 
+  geom_boxplot(aes(x = decision, y = gpa, fill = institution.x)) +
+  coord_cartesian(ylim = c(3,4)) + 
+  ggtitle("GPA by Application Decision, USNWR Top 10 (1-10, left to right)")
